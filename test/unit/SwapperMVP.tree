@@ -1,0 +1,33 @@
+SwapperMVP::provide
+├── When amount is zero
+│   └── It should revert with InvalidAmount
+├── When swap already executed
+│   └── It should revert with InvalidState
+├── When user has insufficient allowance
+│   └── It should revert with insufficient allowance
+└── When valid conditions
+    ├── It should transfer tokens from user
+    ├── It should update user deposits
+    ├── It should update total deposited
+    └── It should emit TokensProvided event
+
+SwapperMVP::swap
+├── When swap already executed
+│   └── It should revert with InvalidState
+├── When no tokens deposited
+│   └── It should revert with NoTokensToSwap
+├── When insufficient toToken liquidity
+│   └── It should revert with NotEnoughLiquidity
+└── When valid conditions
+    ├── It should set hasSwapped to true
+    └── It should emit SwapExecuted event
+
+SwapperMVP::withdraw
+├── When swap not executed
+│   └── It should revert with InvalidState
+├── When user has no deposits
+│   └── It should revert with NoTokenToWithdraw
+└── When valid conditions
+    ├── It should reset user deposits to zero
+    ├── It should transfer toToken to user
+    └── It should emit TokensWithdrawn event
