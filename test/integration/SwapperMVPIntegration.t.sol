@@ -7,6 +7,11 @@ import {MockDAI} from "../mocks/MockDAI.sol";
 import {MockWETH} from "../mocks/MockWETH.sol";
 
 contract SwapperMVPIntegrationTest is Test {
+  uint256 public constant USER1_INITIAL_BALANCE = 10000e18;
+  uint256 public constant USER2_INITIAL_BALANCE = 5000e18;
+  uint256 public constant USER3_INITIAL_BALANCE = 2000e18;
+  uint256 public constant GOVERNOR_LIQUIDITY = 20000e18;
+
   SwapperMVP public swapper;
   MockDAI public dai;
   MockWETH public weth;
@@ -15,11 +20,6 @@ contract SwapperMVPIntegrationTest is Test {
   address public user2 = makeAddr("user2");
   address public user3 = makeAddr("user3");
   address public governor = makeAddr("governor");
-
-  uint256 public constant USER1_INITIAL_BALANCE = 10000e18;
-  uint256 public constant USER2_INITIAL_BALANCE = 5000e18;
-  uint256 public constant USER3_INITIAL_BALANCE = 2000e18;
-  uint256 public constant GOVERNOR_LIQUIDITY = 20000e18;
 
   function setUp() public {
     // Deploy tokens

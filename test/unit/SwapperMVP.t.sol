@@ -11,14 +11,14 @@ import {MockWETH} from "../mocks/MockWETH.sol";
  * @dev Uses real mock tokens instead of vm.mockCall for clarity and simplicity
  */
 contract SwapperMVPTest is Test {
+  uint256 constant DEPOSIT_AMOUNT = 1000e18;
+
   SwapperMVP public swapper;
   MockDAI public dai;
   MockWETH public weth;
 
   address public user1 = makeAddr("user1");
   address public user2 = makeAddr("user2");
-
-  uint256 constant DEPOSIT_AMOUNT = 1000e18;
 
   function setUp() public {
     // Deploy mock tokens
@@ -137,12 +137,19 @@ contract SwapperMVPTest is Test {
                            WITHDRAW TESTS
     //////////////////////////////////////////////////////////////*/
 
-  function test_withdraw_revertsWhenNotSwapped() external {
+  function test_withdraw_beforeSwap() external {
     _userDeposit(user1, DEPOSIT_AMOUNT);
 
+    uint256 balanceBefore = dai.balanceOf(user1);
+
+    vm.expectEmit(true, true, false, false);
+    emit ISwapperMVP.TokensWithdrawn(user1, DEPOSIT_AMOUNT);
+
     vm.prank(user1);
-    vm.expectRevert(ISwapperMVP.SwapperMVP__InvalidState.selector);
     swapper.withdraw();
+
+    assertEq(swapper.deposits(user1), 0);
+    assertEq(dai.balanceOf(user1), balanceBefore + DEPOSIT_AMOUNT);
   }
 
   function test_withdraw_revertsWhenNoDeposit() external {
@@ -154,7 +161,7 @@ contract SwapperMVPTest is Test {
     swapper.withdraw();
   }
 
-  function test_withdraw_successfulWithdrawal() external {
+  function test_withdraw_afterSwap() external {
     _userDeposit(user1, DEPOSIT_AMOUNT);
     swapper.swap();
 
@@ -173,6 +180,17 @@ contract SwapperMVPTest is Test {
   function test_withdraw_cannotWithdrawTwice() external {
     _userDeposit(user1, DEPOSIT_AMOUNT);
     swapper.swap();
+
+    vm.startPrank(user1);
+    swapper.withdraw();
+
+    vm.expectRevert(ISwapperMVP.SwapperMVP_NoTokenToWithdraw.selector);
+    swapper.withdraw();
+    vm.stopPrank();
+  }
+
+  function test_withdraw_beforeSwap_cannotWithdrawTwice() external {
+    _userDeposit(user1, DEPOSIT_AMOUNT);
 
     vm.startPrank(user1);
     swapper.withdraw();
