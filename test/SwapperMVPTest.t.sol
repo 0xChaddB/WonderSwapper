@@ -20,7 +20,7 @@ contract SwapperMVPTest is Test {
         weth = new MockWETH();
         swapper = new SwapperMVP(address(dai), address(weth));
 
-        dai.mint(user1, 10000e18);
+        dai.mint(user1, 1000e18);
         dai.mint(user2, 5000e18);
 
         // Governor fund toToken Liquidity (WETH)
@@ -40,6 +40,31 @@ contract SwapperMVPTest is Test {
         assertEq(swapper.totalDeposited(), 1000e18);
         
         vm.stopPrank();
+    }
+
+    function testUserCanSwap() external {
+        vm.startPrank(user1);
+        // User1 approves
+        dai.approve(address(swapper), 1000e18);
+        // User1 provides
+        vm.expectEmit(true, true, false, false);
+        emit ISwapperMVP.TokensProvided(user1, 1000e18);
+        swapper.provide(1000e18);
+        vm.stopPrank();
+
+        vm.startPrank(user2);
+        // User2 approves
+        dai.approve(address(swapper), 5000e18);
+        // User2 provides
+        vm.expectEmit(true, true, false, false);
+        emit ISwapperMVP.TokensProvided(user2, 5000e18);
+        swapper.provide(5000e18);
+        // User2 Calls the swap
+        vm.expectEmit(true, true, false, false);
+        emit ISwapperMVP.SwapExecuted(6000e18, 6000e18);
+        swapper.swap();
+        
+        assertTrue(swapper.hasSwapped());
     }
     
 }
