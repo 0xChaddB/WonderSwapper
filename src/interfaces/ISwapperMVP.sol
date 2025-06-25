@@ -28,9 +28,8 @@ interface ISwapperMVP {
      * @notice Emitted when a user withdraws their tokens
      * @param user The address of the withdrawer
      * @param amount The amount of tokens withdrawn
-     * @param isFromToken Whether the withdrawn tokens are fromToken (true) or toToken (false)
      */
-    event TokensWithdrawn(address indexed user, uint256 indexed amount, bool isFromToken);
+    event TokensWithdrawn(address indexed user, uint256 indexed amount);
 
     //* ERRORS *//
     
@@ -46,5 +45,15 @@ interface ISwapperMVP {
     /// @param to The recipient address  
     /// @param amount The amount that failed to transfer
     error SwapperMVP__TransferFailed(address from, address to, uint256 amount);
+    
+    /// @notice Thrown when attempting to swap with no deposited tokens
+    error SwapperMVP__NoTokensToSwap();
 
+    /// @notice Thrown when the contract lacks sufficient toToken for the swap
+    /// @param toBalance Current balance of toToken in the contract
+    /// @param totalDeposited Required amount of toToken for the swap
+    error SwapperMVP_NotEnoughLiquidity(uint256 toBalance, uint256 totalDeposited);
+
+    /// @notice Thrown when a user attempts to withdraw but has no deposits
+    error SwapperMVP_NoTokenToWithdraw();
 }
