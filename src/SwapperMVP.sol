@@ -16,6 +16,12 @@ contract SwapperMVP is ISwapperMVP {
 
     //* STATE VARIABLE *//
 
+    /// @notice The token that users deposit (immutable after deployment)
+    address public immutable FROM_TOKEN;
+    
+    /// @notice The token that users receive after swap (immutable after deployment)
+    address public immutable TO_TOKEN;
+
     /// @notice Tracks the amount of fromToken deposited by each user
     mapping(address user => uint256 amount) public deposits;
 
@@ -25,12 +31,6 @@ contract SwapperMVP is ISwapperMVP {
     /// @notice Total amount of fromToken deposited across all users
     uint256 public totalDeposited;
 
-    /// @notice The token that users deposit (immutable after deployment)
-    address public immutable fromToken;
-    
-    /// @notice The token that users receive after swap (immutable after deployment)
-    address public immutable toToken;
-
     //* CONSTRUCTOR *//
     /**
      * @notice Initializes the swapper with token pair configuration
@@ -39,8 +39,8 @@ contract SwapperMVP is ISwapperMVP {
      * @dev Both tokens must be valid ERC20 contracts. Governor must provide toToken liquidity.
     */
     constructor(address _fromToken, address _toToken) {
-        fromToken = _fromToken;
-        toToken = _toToken;
+        FROM_TOKEN = _fromToken;
+        TO_TOKEN = _toToken;
     }
 
     //* FUNCTIONS *//
@@ -57,7 +57,7 @@ contract SwapperMVP is ISwapperMVP {
         require(!hasSwapped, SwapperMVP__InvalidState());
         require(_amount > 0, SwapperMVP__InvalidAmount(_amount));
         // The ERC20, should check for user balance and allowance 
-        IERC20(fromToken).transferFrom(msg.sender, address(this), _amount);
+        IERC20(FROM_TOKEN).transferFrom(msg.sender, address(this), _amount);
 
         deposits[msg.sender] += _amount;
         totalDeposited += _amount;
@@ -75,7 +75,7 @@ contract SwapperMVP is ISwapperMVP {
       require(totalDeposited > 0, SwapperMVP__NoTokensToSwap());
 
       // Governor (deployer) will need to provide toToken liquidity
-      uint256 toBalance = IERC20(toToken).balanceOf(address(this));
+      uint256 toBalance = IERC20(TO_TOKEN).balanceOf(address(this));
       require(toBalance >= totalDeposited, SwapperMVP_NotEnoughLiquidity(toBalance, totalDeposited));
 
       hasSwapped = true;
@@ -94,7 +94,7 @@ contract SwapperMVP is ISwapperMVP {
         require(amount > 0, SwapperMVP_NoTokenToWithdraw());
 
         deposits[msg.sender] = 0;
-        IERC20(address(toToken)).transfer(msg.sender, amount);
+        IERC20(TO_TOKEN).transfer(msg.sender, amount);
 
         emit TokensWithdrawn(msg.sender, amount);
     }

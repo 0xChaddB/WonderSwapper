@@ -25,7 +25,6 @@ contract SwapperMVPTest is Test {
 
         // Governor fund toToken Liquidity (WETH)
         weth.mint(address(swapper), 20000e18);
-
     }
 
     function testUserCanProvide() external {
